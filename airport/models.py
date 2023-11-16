@@ -13,6 +13,9 @@ class AirplaneType(models.Model):
 class SeatClass(models.Model):
     name = models.CharField(max_length=63)
 
+    class Meta:
+        verbose_name_plural = "Seat Classes"
+
     def __str__(self):
         return self.name
 
@@ -29,13 +32,14 @@ class Airplane(models.Model):
 
     @property
     def capacity(self):
-        return sum(
-            (self.seats_economy, self.seats_business, self.seats_first_class)
-        )
+        return sum((self.seats_economy, self.seats_business, self.seats_first_class))
 
 
 class Country(models.Model):
     name = models.CharField(max_length=63)
+
+    class Meta:
+        verbose_name_plural = "Countries"
 
     def __str__(self):
         return self.name
@@ -87,9 +91,7 @@ class Flight(models.Model):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.created_at)
