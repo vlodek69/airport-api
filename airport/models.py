@@ -32,7 +32,9 @@ class Airplane(models.Model):
 
     @property
     def capacity(self):
-        return sum((self.seats_economy, self.seats_business, self.seats_first_class))
+        return sum(
+            (self.seats_economy, self.seats_business, self.seats_first_class)
+        )
 
 
 class Country(models.Model):
@@ -74,6 +76,10 @@ class Crew(models.Model):
     def __str__(self):
         return self.first_name + " " + self.last_name
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
 
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
@@ -91,7 +97,9 @@ class Flight(models.Model):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return str(self.created_at)
@@ -103,8 +111,16 @@ class Order(models.Model):
 class Ticket(models.Model):
     seat_class = models.ForeignKey(SeatClass, on_delete=models.CASCADE)
     seat = models.IntegerField()
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    flight = models.ForeignKey(
+        Flight,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
 
     @staticmethod
     def validate_ticket(seat_class, seat, airplane, error_to_raise):
