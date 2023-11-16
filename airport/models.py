@@ -73,6 +73,9 @@ class Crew(models.Model):
     first_name = models.CharField(max_length=63)
     last_name = models.CharField(max_length=63)
 
+    class Meta:
+        verbose_name_plural = "Crew"
+
     def __str__(self):
         return self.first_name + " " + self.last_name
 
@@ -112,14 +115,10 @@ class Ticket(models.Model):
     seat_class = models.ForeignKey(SeatClass, on_delete=models.CASCADE)
     seat = models.IntegerField()
     flight = models.ForeignKey(
-        Flight,
-        on_delete=models.CASCADE,
-        related_name="tickets"
+        Flight, on_delete=models.CASCADE, related_name="tickets"
     )
     order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="tickets"
+        Order, on_delete=models.CASCADE, related_name="tickets"
     )
 
     @staticmethod
