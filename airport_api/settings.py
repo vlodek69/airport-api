@@ -20,7 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-hc*iyul^an_=rno&@nfd72w_zbbh4%46@tio6qa)@i&k50rnyx"
+SECRET_KEY = (
+    "django-insecure-hc*iyul^an_=rno&@nfd72w_zbbh4%46@tio6qa)@i&k50rnyx"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +39,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "airport",
+    "user",
 ]
 
 MIDDLEWARE = [
@@ -54,8 +59,7 @@ ROOT_URLCONF = "airport_api.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates']
-        ,
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -100,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# AUTH_USER_MODEL = "user.User"
+AUTH_USER_MODEL = "user.User"
 
 
 # Internationalization

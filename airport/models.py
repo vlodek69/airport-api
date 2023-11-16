@@ -19,9 +19,9 @@ class SeatClass(models.Model):
 
 class Airplane(models.Model):
     name = models.CharField(max_length=63)
-    seats_economy = models.ImageField(default=0)
-    seats_business = models.ImageField(default=0)
-    seats_first_class = models.ImageField(default=0)
+    seats_economy = models.IntegerField(default=0)
+    seats_business = models.IntegerField(default=0)
+    seats_first_class = models.IntegerField(default=0)
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -51,9 +51,13 @@ class Airport(models.Model):
 
 
 class Route(models.Model):
-    departure = models.ForeignKey(Airport, on_delete=models.CASCADE)
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE)
-    distance = models.ImageField()
+    departure = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="departure_routs"
+    )
+    destination = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="destination_routs"
+    )
+    distance = models.IntegerField()
 
     def __str__(self):
         return f"{self.departure}-{self.destination}"
@@ -70,7 +74,7 @@ class Crew(models.Model):
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     crew = models.ManyToManyField(Crew, related_name="flights")
-    airplane = models.ForeignKey(Airplane, related_name="flights")
+    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
@@ -127,8 +131,10 @@ class Ticket(models.Model):
         )
 
     def __str__(self):
-        return (f"{str(self.flight)} "
-                f"(seat: {self.seat}, seat_class: {str(self.seat_class)}")
+        return (
+            f"{str(self.flight)} "
+            f"(seat: {self.seat}, seat_class: {str(self.seat_class)}"
+        )
 
     class Meta:
         unique_together = ("flight", "seat_class", "seat")
