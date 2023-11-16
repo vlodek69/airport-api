@@ -11,7 +11,8 @@ from airport.models import (
     Route,
     Crew,
     Flight,
-    Ticket, Order,
+    Ticket,
+    Order,
 )
 
 
@@ -45,11 +46,9 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
 
 class AirplaneListSerializer(AirplaneSerializer):
-    seats_economy = serializers.IntegerField(allow_empty=True, read_only=True)
-    seats_business = serializers.IntegerField(allow_empty=True, read_only=True)
-    seats_first_class = serializers.IntegerField(
-        allow_empty=True, read_only=True
-    )
+    seats_economy = serializers.IntegerField(read_only=True)
+    seats_business = serializers.IntegerField(read_only=True)
+    seats_first_class = serializers.IntegerField(read_only=True)
     airplane_capacity = serializers.IntegerField(
         source="capacity", read_only=True
     )
