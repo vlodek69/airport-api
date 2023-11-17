@@ -22,9 +22,9 @@ class SeatClass(models.Model):
 
 class Airplane(models.Model):
     name = models.CharField(max_length=63)
-    seats_economy = models.IntegerField(default=0)
-    seats_business = models.IntegerField(default=0)
-    seats_first_class = models.IntegerField(default=0)
+    seats_economy = models.IntegerField(blank=True, null=True)
+    seats_business = models.IntegerField(blank=True, null=True)
+    seats_first_class = models.IntegerField(blank=True, null=True)
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -33,7 +33,11 @@ class Airplane(models.Model):
     @property
     def capacity(self):
         return sum(
-            (self.seats_economy, self.seats_business, self.seats_first_class)
+            (
+                getattr(self, "seats_economy", 0),
+                getattr(self, "seats_business", 0),
+                getattr(self, "seats_first_class", 0),
+            )
         )
 
 
@@ -123,9 +127,13 @@ class Ticket(models.Model):
 
     @staticmethod
     def validate_ticket(seat_class, seat, airplane, error_to_raise):
-        max_seat = getattr(airplane, "seats_" + seat_class.name.lower())
+        max_seat = getattr(airplane, "seats_" + seat_class.name.lower(), None)
+        if not max_seat:
+            raise error_to_raise(f"Airplane has no {seat_class.name} cabin")
         if not 1 <= seat <= max_seat:
-            raise error_to_raise
+            raise error_to_raise(
+                f"Seat number must be in range (1, {max_seat})"
+            )
 
     def clean(self):
         Ticket.validate_ticket(
