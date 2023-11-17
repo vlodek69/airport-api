@@ -32,12 +32,10 @@ class Airplane(models.Model):
 
     @property
     def capacity(self):
+        seat_classes = ("seats_economy", "seats_business", "seats_first_class")
+
         return sum(
-            (
-                getattr(self, "seats_economy", 0),
-                getattr(self, "seats_business", 0),
-                getattr(self, "seats_first_class", 0),
-            )
+            getattr(self, seat_class, 0) or 0 for seat_class in seat_classes
         )
 
 
@@ -83,10 +81,6 @@ class Crew(models.Model):
     def __str__(self):
         return self.first_name + " " + self.last_name
 
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
-
 
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
@@ -95,11 +89,11 @@ class Flight(models.Model):
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
-    def __str__(self):
-        return f"{str(self.route)} {self.departure_time}"
-
     class Meta:
         ordering = ["-departure_time"]
+
+    def __str__(self):
+        return f"{str(self.route)} {self.departure_time}"
 
 
 class Order(models.Model):
@@ -108,11 +102,11 @@ class Order(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
 
-    def __str__(self):
-        return str(self.created_at)
-
     class Meta:
         ordering = ["-created_at"]
+
+    def __str__(self):
+        return str(self.created_at)
 
 
 class Ticket(models.Model):
@@ -124,6 +118,10 @@ class Ticket(models.Model):
     order = models.ForeignKey(
         Order, on_delete=models.CASCADE, related_name="tickets"
     )
+
+    class Meta:
+        unique_together = ("flight", "seat_class", "seat")
+        ordering = ["seat_class", "seat"]
 
     @staticmethod
     def validate_ticket(seat_class, seat, airplane, error_to_raise):
@@ -160,7 +158,3 @@ class Ticket(models.Model):
             f"{str(self.flight)} "
             f"(seat: {self.seat}, seat_class: {str(self.seat_class)}"
         )
-
-    class Meta:
-        unique_together = ("flight", "seat_class", "seat")
-        ordering = ["seat_class", "seat"]

@@ -26,6 +26,7 @@ from airport.serializers import (
     OrderSerializer,
     TicketSerializer,
     OrderListSerializer,
+    FlightListSerializer, AirplaneListSerializer,
 )
 
 
@@ -55,8 +56,13 @@ class AirplaneViewSet(
     GenericViewSet,
 ):
     queryset = Airplane.objects.all()
-    serializer_class = AirplaneSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return AirplaneListSerializer
+
+        return AirplaneSerializer
 
 
 class CountryViewSet(
@@ -105,8 +111,13 @@ class FlightViewSet(
     GenericViewSet,
 ):
     queryset = Flight.objects.all()
-    serializer_class = FlightSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FlightListSerializer
+
+        return FlightSerializer
 
 
 class OrderViewSet(
@@ -118,6 +129,7 @@ class OrderViewSet(
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
+        """Retrieve the orders with currently authenticated user"""
         return Order.objects.filter(user=self.request.user)
 
     def get_serializer_class(self):
@@ -127,4 +139,5 @@ class OrderViewSet(
         return OrderSerializer
 
     def perform_create(self, serializer):
+        """Create the orders with currently authenticated user"""
         serializer.save(user=self.request.user)

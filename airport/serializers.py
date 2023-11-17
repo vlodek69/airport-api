@@ -52,9 +52,7 @@ class AirplaneListSerializer(AirplaneSerializer):
     airplane_capacity = serializers.IntegerField(
         source="capacity", read_only=True
     )
-    airplane_type = serializers.CharField(
-        source="airplane_type.name", read_only=True
-    )
+    airplane_type = serializers.StringRelatedField()
 
     class Meta:
         model = Airplane
@@ -118,9 +116,9 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class FlightListSerializer(FlightSerializer):
-    crew = serializers.SlugRelatedField(
-        many=True, read_only=True, slug_field="full_name"
-    )
+    airplane = AirplaneListSerializer()
+    route = serializers.StringRelatedField(many=False)
+    crew = serializers.StringRelatedField(many=True)
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -140,6 +138,9 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class TicketListSerializer(TicketSerializer):
+    seat_class = serializers.SlugRelatedField(
+        many=False, read_only=True, slug_field="name"
+    )
     flight = FlightListSerializer(many=False, read_only=True)
 
 
