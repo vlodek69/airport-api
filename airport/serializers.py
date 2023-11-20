@@ -90,10 +90,14 @@ class RouteSerializer(serializers.ModelSerializer):
 
 
 class RouteListSerializer(RouteSerializer):
-    departure = serializers.CharField(source="departure.name", read_only=True)
-    destination = serializers.CharField(
-        source="destination.name", read_only=True
-    )
+    departure = serializers.StringRelatedField()
+    destination = serializers.StringRelatedField()
+    distance = serializers.CharField(source="distance_km", read_only=True)
+
+
+class RouteDetailSerializer(RouteSerializer):
+    departure = AirportListSerializer()
+    destination = AirportListSerializer()
     distance = serializers.CharField(source="distance_km", read_only=True)
 
 
@@ -104,6 +108,7 @@ class CrewSerializer(serializers.ModelSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Flight
         fields = (
@@ -119,7 +124,7 @@ class FlightSerializer(serializers.ModelSerializer):
 class FlightListSerializer(FlightSerializer):
     airplane = serializers.StringRelatedField(many=False)
     route = serializers.StringRelatedField(many=False)
-    # crew = serializers.StringRelatedField(many=True)
+    tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Flight
@@ -127,7 +132,7 @@ class FlightListSerializer(FlightSerializer):
             "id",
             "route",
             "airplane",
-            # "seats_available", TODO
+            "tickets_available",
             "departure_time",
             "arrival_time",
         )
@@ -135,8 +140,21 @@ class FlightListSerializer(FlightSerializer):
 
 class FlightDetailSerializer(FlightSerializer):
     airplane = AirplaneListSerializer()
-    route = RouteListSerializer()
+    route = RouteDetailSerializer()
     crew = serializers.StringRelatedField(many=True)
+    tickets_available = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "crew",
+            "airplane",
+            "tickets_available",
+            "departure_time",
+            "arrival_time",
+        )
 
 
 # TODO: make endpoints flat, add custom fields, add detail endpoints, add filters, add image field somewhere, add documentation, define REST_FRAMEWORK settings(throttling, default permissions), optimize queries, switch to postgres, update readme, dockerize

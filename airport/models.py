@@ -22,9 +22,9 @@ class SeatClass(models.Model):
 
 class Airplane(models.Model):
     name = models.CharField(max_length=63)
-    seats_economy = models.IntegerField(blank=True, null=True)
-    seats_business = models.IntegerField(blank=True, null=True)
-    seats_first_class = models.IntegerField(blank=True, null=True)
+    seats_economy = models.IntegerField(blank=True, default=0)
+    seats_business = models.IntegerField(blank=True, default=0)
+    seats_first_class = models.IntegerField(blank=True, default=0)
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -32,11 +32,10 @@ class Airplane(models.Model):
 
     @property
     def capacity(self):
-        seat_classes = ("seats_economy", "seats_business", "seats_first_class")
+        seat_classes = (self.seats_economy, self.seats_business,
+                        self.seats_first_class)
 
-        return sum(
-            getattr(self, seat_class, 0) or 0 for seat_class in seat_classes
-        )
+        return sum(seat_classes)
 
 
 class Country(models.Model):
@@ -68,7 +67,11 @@ class Route(models.Model):
     distance = models.IntegerField()
 
     def __str__(self):
-        return f"{self.departure}-{self.destination}"
+        return f"{str(self.departure)}-{str(self.destination)}"
+
+    @property
+    def name(self):
+        return f"{self.departure.name}-{self.destination.name}"
 
     @property
     def distance_km(self):

@@ -1,3 +1,4 @@
+from django.db.models import Count, F
 from rest_framework import mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
 
@@ -30,7 +31,7 @@ from airport.serializers import (
     AirplaneListSerializer,
     RouteListSerializer,
     AirportListSerializer,
-    FlightDetailSerializer,
+    FlightDetailSerializer, RouteDetailSerializer,
 )
 
 
@@ -59,7 +60,7 @@ class AirplaneViewSet(
     mixins.ListModelMixin,
     GenericViewSet,
 ):
-    queryset = Airplane.objects.all()
+    queryset = Airplane.objects.select_related("airplane_type")
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
@@ -84,7 +85,7 @@ class AirportViewSet(
     mixins.ListModelMixin,
     GenericViewSet,
 ):
-    queryset = Airport.objects.all()
+    queryset = Airport.objects.select_related("country")
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
@@ -97,14 +98,18 @@ class AirportViewSet(
 class RouteViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Route.objects.all()
+    queryset = Route.objects.select_related("departure__country", "destination__country")
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "list":
             return RouteListSerializer
+
+        if self.action == "retrieve":
+            return RouteDetailSerializer
 
         return RouteSerializer
 
@@ -120,8 +125,46 @@ class CrewViewSet(
 
 
 class FlightViewSet(viewsets.ModelViewSet):
-    queryset = Flight.objects.all()
+    queryset = (
+        Flight.objects
+        .select_related("route__departure__country",
+                        "route__destination__country", "airplane")
+        .annotate(
+            tickets_available=(
+                    F("airplane__seats_economy")
+                    + F("airplane__seats_business")
+                    + F("airplane__seats_first_class")
+                    - Count("tickets")
+            )
+        )
+    )
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_queryset(self):
+        queryset = self.queryset
+        # if self.action == "list":
+        #     queryset = (
+        #         queryset
+        #         .select_related("route__departure", "route__destination",
+        #                         "airplane")
+        #     )
+
+        if self.action == "retrieve":
+            queryset = (
+                queryset
+                .prefetch_related("crew")
+            )
+
+        # else:
+        #     queryset = (
+        #         queryset
+        #         .select_related("route__departure", "route__destination",
+        #                         "airplane")
+        #
+        #     )
+
+        return queryset
+
 
     def get_serializer_class(self):
         if self.action == "list":
