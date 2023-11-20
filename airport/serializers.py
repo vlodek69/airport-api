@@ -94,6 +94,7 @@ class RouteListSerializer(RouteSerializer):
     destination = serializers.CharField(
         source="destination.name", read_only=True
     )
+    distance = serializers.CharField(source="distance_km", read_only=True)
 
 
 class CrewSerializer(serializers.ModelSerializer):
@@ -116,9 +117,24 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class FlightListSerializer(FlightSerializer):
-    airplane = AirplaneListSerializer()
+    airplane = serializers.StringRelatedField(many=False)
     route = serializers.StringRelatedField(many=False)
-    crew = serializers.StringRelatedField(many=True)
+    # crew = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            # "seats_available", TODO
+            "departure_time",
+            "arrival_time",
+        )
+
+
+# class FlightDetailSerializer(FlightSerializer):
+# TODO: make endpoints flat, add custom fields, add detail endpoints, add filters, add image field somewhere, add documentation, define REST_FRAMEWORK settings(throttling, default permissions), optimize queries, switch to postgres, update readme, dockerize
 
 
 class TicketSerializer(serializers.ModelSerializer):

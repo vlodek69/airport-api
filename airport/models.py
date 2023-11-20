@@ -70,6 +70,10 @@ class Route(models.Model):
     def __str__(self):
         return f"{self.departure}-{self.destination}"
 
+    @property
+    def distance_km(self):
+        return f"{self.distance} km"
+
 
 class Crew(models.Model):
     first_name = models.CharField(max_length=63)

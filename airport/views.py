@@ -1,4 +1,4 @@
-from rest_framework import mixins
+from rest_framework import mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
 
 from airport.models import (
@@ -26,7 +26,10 @@ from airport.serializers import (
     OrderSerializer,
     TicketSerializer,
     OrderListSerializer,
-    FlightListSerializer, AirplaneListSerializer,
+    FlightListSerializer,
+    AirplaneListSerializer,
+    RouteListSerializer,
+    AirportListSerializer,
 )
 
 
@@ -81,8 +84,13 @@ class AirportViewSet(
     GenericViewSet,
 ):
     queryset = Airport.objects.all()
-    serializer_class = AirportSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return AirportListSerializer
+
+        return AirportSerializer
 
 
 class RouteViewSet(
@@ -91,8 +99,13 @@ class RouteViewSet(
     GenericViewSet,
 ):
     queryset = Route.objects.all()
-    serializer_class = RouteSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return RouteListSerializer
+
+        return RouteSerializer
 
 
 class CrewViewSet(
@@ -105,11 +118,7 @@ class CrewViewSet(
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
-class FlightViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet,
-):
+class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.all()
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
