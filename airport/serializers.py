@@ -133,7 +133,12 @@ class FlightListSerializer(FlightSerializer):
         )
 
 
-# class FlightDetailSerializer(FlightSerializer):
+class FlightDetailSerializer(FlightSerializer):
+    airplane = AirplaneListSerializer()
+    route = RouteListSerializer()
+    crew = serializers.StringRelatedField(many=True)
+
+
 # TODO: make endpoints flat, add custom fields, add detail endpoints, add filters, add image field somewhere, add documentation, define REST_FRAMEWORK settings(throttling, default permissions), optimize queries, switch to postgres, update readme, dockerize
 
 
