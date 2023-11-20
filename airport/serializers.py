@@ -157,7 +157,7 @@ class FlightDetailSerializer(FlightSerializer):
         )
 
 
-# TODO: make endpoints flat, add custom fields, add detail endpoints, add filters, add image field somewhere, add documentation, define REST_FRAMEWORK settings(throttling, default permissions), optimize queries, switch to postgres, update readme, dockerize
+# TODO: add filters, add image field somewhere, add documentation, define REST_FRAMEWORK settings(throttling, default permissions), optimize queries, switch to postgres, update readme, dockerize
 
 
 class TicketSerializer(serializers.ModelSerializer):

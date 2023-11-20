@@ -1,4 +1,6 @@
-from django.db.models import Count, F
+from datetime import datetime
+
+from django.db.models import Count, F, Q
 from rest_framework import mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
 
@@ -127,41 +129,47 @@ class CrewViewSet(
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = (
         Flight.objects
-        .select_related("route__departure__country",
-                        "route__destination__country", "airplane")
+        .prefetch_related("crew")
+        .select_related(
+            "route__departure__country",
+            "route__destination__country",
+            "airplane"
+        )
         .annotate(
             tickets_available=(
-                    F("airplane__seats_economy")
-                    + F("airplane__seats_business")
-                    + F("airplane__seats_first_class")
-                    - Count("tickets")
+                F("airplane__seats_economy")
+                + F("airplane__seats_business")
+                + F("airplane__seats_first_class")
+                - Count("tickets")
             )
         )
     )
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
-        queryset = self.queryset
-        # if self.action == "list":
-        #     queryset = (
-        #         queryset
-        #         .select_related("route__departure", "route__destination",
-        #                         "airplane")
-        #     )
+        departure = self.request.query_params.get("from")
+        destination = self.request.query_params.get("to")
+        departure_date = self.request.query_params.get("date")
 
-        if self.action == "retrieve":
-            queryset = (
-                queryset
-                .prefetch_related("crew")
+        queryset = self.queryset
+
+        if departure:
+            queryset = queryset.filter(
+                Q(route__departure__name__icontains=departure)
+                | Q(route__departure__near_city__icontains=departure)
+                | Q(route__departure__country__name__icontains=departure)
             )
 
-        # else:
-        #     queryset = (
-        #         queryset
-        #         .select_related("route__departure", "route__destination",
-        #                         "airplane")
-        #
-        #     )
+        if destination:
+            queryset = queryset.filter(
+                Q(route__destination__name__icontains=destination)
+                | Q(route__destination__near_city__icontains=destination)
+                | Q(route__destination__country__name__icontains=destination)
+            )
+
+        if departure_date:
+            departure_date = datetime.strptime(departure_date, "%Y-%m-%d").date()
+            queryset = queryset.filter(departure_time__date=departure_date)
 
         return queryset
 
