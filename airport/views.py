@@ -1,9 +1,12 @@
 from datetime import datetime
 
 from django.db.models import Count, F, Q
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -155,6 +158,11 @@ class CrewViewSet(
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
+class BasePagination(PageNumberPagination):
+    page_size = 10
+    max_page_size = 100
+
+
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = (
         Flight.objects.prefetch_related("crew")
@@ -172,6 +180,7 @@ class FlightViewSet(viewsets.ModelViewSet):
             )
         )
     )
+    pagination_class = BasePagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
@@ -212,6 +221,36 @@ class FlightViewSet(viewsets.ModelViewSet):
 
         return FlightSerializer
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "from",
+                type=OpenApiTypes.STR,
+                description=(
+                    "Filter by departure city, country or airport name "
+                    "(ex. ?from=Kyiv)"
+                ),
+            ),
+            OpenApiParameter(
+                "to",
+                type=OpenApiTypes.STR,
+                description=(
+                    "Filter by destination city, country or airport name "
+                    "(ex. ?to=Krakow)"
+                ),
+            ),
+            OpenApiParameter(
+                "date",
+                type=OpenApiTypes.DATE,
+                description=(
+                    "Filter by date of DEPARTURE " "(ex. ?date=2024-04-19)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class OrderViewSet(
     mixins.CreateModelMixin,
@@ -219,7 +258,8 @@ class OrderViewSet(
     GenericViewSet,
 ):
     queryset = Order.objects.all()
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    pagination_class = BasePagination
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         """Retrieve the orders with currently authenticated user"""
