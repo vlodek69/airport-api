@@ -1,6 +1,10 @@
+import os
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.text import slugify
 
 
 class AirplaneType(models.Model):
@@ -32,14 +36,25 @@ class Airplane(models.Model):
 
     @property
     def capacity(self):
-        seat_classes = (self.seats_economy, self.seats_business,
-                        self.seats_first_class)
+        seat_classes = (
+            self.seats_economy,
+            self.seats_business,
+            self.seats_first_class,
+        )
 
         return sum(seat_classes)
 
 
+def country_image_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+
+    return os.path.join("uploads/countries/", filename)
+
+
 class Country(models.Model):
     name = models.CharField(max_length=63)
+    image = models.ImageField(null=True, upload_to=country_image_file_path)
 
     class Meta:
         verbose_name_plural = "Countries"

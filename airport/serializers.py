@@ -73,6 +73,12 @@ class CountrySerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
+class CountryImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = ("id", "image")
+
+
 class AirportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
@@ -108,7 +114,6 @@ class CrewSerializer(serializers.ModelSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Flight
         fields = (
@@ -157,7 +162,7 @@ class FlightDetailSerializer(FlightSerializer):
         )
 
 
-# TODO: add filters, add image field somewhere, add documentation, define REST_FRAMEWORK settings(throttling, default permissions), optimize queries, switch to postgres, update readme, dockerize
+# TODO: add image field somewhere, add documentation, define REST_FRAMEWORK settings(throttling, default permissions), optimize queries, switch to postgres, update readme, dockerize
 
 
 class TicketSerializer(serializers.ModelSerializer):

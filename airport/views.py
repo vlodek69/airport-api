@@ -1,7 +1,10 @@
 from datetime import datetime
 
 from django.db.models import Count, F, Q
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from airport.models import (
@@ -33,7 +36,9 @@ from airport.serializers import (
     AirplaneListSerializer,
     RouteListSerializer,
     AirportListSerializer,
-    FlightDetailSerializer, RouteDetailSerializer,
+    FlightDetailSerializer,
+    RouteDetailSerializer,
+    CountryImageSerializer,
 )
 
 
@@ -78,8 +83,30 @@ class CountryViewSet(
     GenericViewSet,
 ):
     queryset = Country.objects.all()
-    serializer_class = CountrySerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "upload_image":
+            return CountryImageSerializer
+
+        return CountrySerializer
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="upload-image",
+        permission_classes=[IsAdminUser],
+    )
+    def upload_image(self, request, pk=None):
+        """Endpoint for uploading image to specific country"""
+        country = self.get_object()
+        serializer = self.get_serializer(country, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AirportViewSet(
@@ -103,7 +130,9 @@ class RouteViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Route.objects.select_related("departure__country", "destination__country")
+    queryset = Route.objects.select_related(
+        "departure__country", "destination__country"
+    )
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
@@ -128,12 +157,11 @@ class CrewViewSet(
 
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = (
-        Flight.objects
-        .prefetch_related("crew")
+        Flight.objects.prefetch_related("crew")
         .select_related(
             "route__departure__country",
             "route__destination__country",
-            "airplane"
+            "airplane",
         )
         .annotate(
             tickets_available=(
@@ -168,11 +196,12 @@ class FlightViewSet(viewsets.ModelViewSet):
             )
 
         if departure_date:
-            departure_date = datetime.strptime(departure_date, "%Y-%m-%d").date()
+            departure_date = datetime.strptime(
+                departure_date, "%Y-%m-%d"
+            ).date()
             queryset = queryset.filter(departure_time__date=departure_date)
 
         return queryset
-
 
     def get_serializer_class(self):
         if self.action == "list":
