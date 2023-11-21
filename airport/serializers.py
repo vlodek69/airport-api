@@ -148,6 +148,9 @@ class FlightDetailSerializer(FlightSerializer):
     route = RouteDetailSerializer()
     crew = serializers.StringRelatedField(many=True)
     tickets_available = serializers.IntegerField(read_only=True)
+    image = serializers.ImageField(
+        source="route.destination.country.image", read_only=True
+    )
 
     class Meta:
         model = Flight
@@ -159,6 +162,7 @@ class FlightDetailSerializer(FlightSerializer):
             "tickets_available",
             "departure_time",
             "arrival_time",
+            "image",
         )
 
 
