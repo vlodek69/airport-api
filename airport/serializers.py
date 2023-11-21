@@ -166,9 +166,6 @@ class FlightDetailSerializer(FlightSerializer):
         )
 
 
-# TODO: add documentation, define REST_FRAMEWORK settings(throttling, default permissions), optimize queries, switch to postgres, update readme, dockerize
-
-
 class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs=attrs)
