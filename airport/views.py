@@ -52,7 +52,6 @@ class AirplaneTypeViewSet(
 ):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class SeatClassViewSet(
@@ -62,7 +61,6 @@ class SeatClassViewSet(
 ):
     queryset = SeatClass.objects.all()
     serializer_class = SeatClassSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class AirplaneViewSet(
@@ -71,7 +69,6 @@ class AirplaneViewSet(
     GenericViewSet,
 ):
     queryset = Airplane.objects.select_related("airplane_type")
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -86,7 +83,6 @@ class CountryViewSet(
     GenericViewSet,
 ):
     queryset = Country.objects.all()
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "upload_image":
@@ -118,7 +114,6 @@ class AirportViewSet(
     GenericViewSet,
 ):
     queryset = Airport.objects.select_related("country")
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -136,7 +131,6 @@ class RouteViewSet(
     queryset = Route.objects.select_related(
         "departure__country", "destination__country"
     )
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -155,7 +149,6 @@ class CrewViewSet(
 ):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class BasePagination(PageNumberPagination):
@@ -181,7 +174,6 @@ class FlightViewSet(viewsets.ModelViewSet):
         )
     )
     pagination_class = BasePagination
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         departure = self.request.query_params.get("from")
