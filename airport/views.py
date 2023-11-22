@@ -41,6 +41,7 @@ from airport.serializers import (
     RouteDetailSerializer,
     CountryImageSerializer,
     CabinSerializer,
+    CabinListSerializer,
 )
 
 
@@ -70,8 +71,13 @@ class CabinViewSet(
     GenericViewSet,
 ):
     queryset = Cabin.objects.all()
-    serializer_class = CabinSerializer
     permission_classes = (IsAdminUser,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CabinListSerializer
+
+        return CabinSerializer
 
 
 class AirplaneViewSet(

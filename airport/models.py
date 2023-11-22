@@ -26,7 +26,7 @@ class SeatClass(models.Model):
 
 class Cabin(models.Model):
     name = models.CharField(max_length=63)
-    seat_class = models.CharField(max_length=63)
+    seat_class = models.ForeignKey(SeatClass, on_delete=models.CASCADE)
     seats = models.IntegerField()
 
     def __str__(self):
@@ -151,7 +151,7 @@ class Ticket(models.Model):
 
     @staticmethod
     def validate_ticket(cabin, seat, airplane, error_to_raise):
-        cabins = getattr(airplane, "cabins", None)
+        cabins = getattr(airplane, "cabins")
         if cabin not in cabins.all():
             raise error_to_raise(f"Airplane has no cabin '{cabin.name}'")
         if not 1 <= seat <= cabin.seats:
@@ -182,5 +182,5 @@ class Ticket(models.Model):
     def __str__(self):
         return (
             f"{str(self.flight)} "
-            f"(seat: {self.seat}, seat_class: {self.cabin.seat_class}"
+            f"(seat: {self.seat}, seat_class: {self.cabin.seat_class.name}"
         )

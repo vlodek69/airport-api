@@ -35,6 +35,18 @@ class CabinSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "seat_class", "seats")
 
 
+class CabinListSerializer(CabinSerializer):
+    seat_class = serializers.SlugRelatedField(
+        slug_field="name", read_only=True
+    )
+
+
+class CabinListSerializerLight(CabinListSerializer):
+    class Meta:
+        model = Cabin
+        fields = ("id", "seat_class", "seats")
+
+
 class AirplaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
@@ -47,7 +59,7 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
 
 class AirplaneListSerializer(AirplaneSerializer):
-    cabins = CabinSerializer(many=True, read_only=True)
+    cabins = CabinListSerializerLight(many=True, read_only=True)
     airplane_capacity = serializers.IntegerField(
         source="capacity", read_only=True
     )
@@ -181,7 +193,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class TicketListSerializer(TicketSerializer):
     cabin = serializers.SlugRelatedField(
-        many=False, read_only=True, slug_field="seat_class"
+        many=False, read_only=True, slug_field="seat_class.name"
     )
     flight = FlightListSerializer(many=False, read_only=True)
 
