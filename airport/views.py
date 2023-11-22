@@ -20,9 +20,7 @@ from airport.models import (
     Crew,
     Flight,
     Order,
-    Ticket,
 )
-from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.serializers import (
     AirplaneTypeSerializer,
     SeatClassSerializer,
@@ -33,7 +31,6 @@ from airport.serializers import (
     CrewSerializer,
     FlightSerializer,
     OrderSerializer,
-    TicketSerializer,
     OrderListSerializer,
     FlightListSerializer,
     AirplaneListSerializer,
