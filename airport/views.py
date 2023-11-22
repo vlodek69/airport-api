@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Count, F, Q
+from django.db.models import Count, Q, Sum
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, viewsets, status
@@ -20,6 +20,7 @@ from airport.models import (
     Crew,
     Flight,
     Order,
+    Cabin,
 )
 from airport.serializers import (
     AirplaneTypeSerializer,
@@ -39,6 +40,7 @@ from airport.serializers import (
     FlightDetailSerializer,
     RouteDetailSerializer,
     CountryImageSerializer,
+    CabinSerializer,
 )
 
 
@@ -49,6 +51,7 @@ class AirplaneTypeViewSet(
 ):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
+    permission_classes = (IsAdminUser,)
 
 
 class SeatClassViewSet(
@@ -58,6 +61,17 @@ class SeatClassViewSet(
 ):
     queryset = SeatClass.objects.all()
     serializer_class = SeatClassSerializer
+    permission_classes = (IsAdminUser,)
+
+
+class CabinViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
+    queryset = Cabin.objects.all()
+    serializer_class = CabinSerializer
+    permission_classes = (IsAdminUser,)
 
 
 class AirplaneViewSet(
@@ -65,7 +79,11 @@ class AirplaneViewSet(
     mixins.ListModelMixin,
     GenericViewSet,
 ):
-    queryset = Airplane.objects.select_related("airplane_type")
+    queryset = (
+        Airplane.objects
+        .select_related("airplane_type")
+        .prefetch_related("cabins")
+    )
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -80,6 +98,7 @@ class CountryViewSet(
     GenericViewSet,
 ):
     queryset = Country.objects.all()
+    permission_classes = (IsAdminUser,)
 
     def get_serializer_class(self):
         if self.action == "upload_image":
@@ -128,6 +147,7 @@ class RouteViewSet(
     queryset = Route.objects.select_related(
         "departure__country", "destination__country"
     )
+    permission_classes = (IsAdminUser,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -146,6 +166,7 @@ class CrewViewSet(
 ):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
+    permission_classes = (IsAdminUser,)
 
 
 class BasePagination(PageNumberPagination):
@@ -163,10 +184,8 @@ class FlightViewSet(viewsets.ModelViewSet):
         )
         .annotate(
             tickets_available=(
-                F("airplane__seats_economy")
-                + F("airplane__seats_business")
-                + F("airplane__seats_first_class")
-                - Count("tickets")
+                    Sum("airplane__cabins__seats", distinct=True)
+                    - Count("tickets")
             )
         )
     )

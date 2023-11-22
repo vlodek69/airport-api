@@ -24,11 +24,18 @@ class SeatClass(models.Model):
         return self.name
 
 
+class Cabin(models.Model):
+    name = models.CharField(max_length=63)
+    seat_class = models.CharField(max_length=63)
+    seats = models.IntegerField()
+
+    def __str__(self):
+        return self.name
+
+
 class Airplane(models.Model):
     name = models.CharField(max_length=63)
-    seats_economy = models.IntegerField(blank=True, default=0)
-    seats_business = models.IntegerField(blank=True, default=0)
-    seats_first_class = models.IntegerField(blank=True, default=0)
+    cabins = models.ManyToManyField(Cabin, related_name="airplanes")
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -36,13 +43,7 @@ class Airplane(models.Model):
 
     @property
     def capacity(self):
-        seat_classes = (
-            self.seats_economy,
-            self.seats_business,
-            self.seats_first_class,
-        )
-
-        return sum(seat_classes)
+        return sum(cabin.seats for cabin in self.cabins.all())
 
 
 def country_image_file_path(instance, filename):
@@ -115,7 +116,10 @@ class Flight(models.Model):
         ordering = ["-departure_time"]
 
     def __str__(self):
-        return f"{str(self.route)} {self.departure_time}"
+        return (
+            f"{str(self.route)} "
+            f"{self.departure_time.strftime('%Y-%m-%d %H:%M')}"
+        )
 
 
 class Order(models.Model):
@@ -128,11 +132,11 @@ class Order(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return str(self.created_at)
+        return self.created_at.strftime('%Y-%m-%d %H:%M')
 
 
 class Ticket(models.Model):
-    seat_class = models.ForeignKey(SeatClass, on_delete=models.CASCADE)
+    cabin = models.ForeignKey(Cabin, on_delete=models.CASCADE)
     seat = models.IntegerField()
     flight = models.ForeignKey(
         Flight, on_delete=models.CASCADE, related_name="tickets"
@@ -142,22 +146,22 @@ class Ticket(models.Model):
     )
 
     class Meta:
-        unique_together = ("flight", "seat_class", "seat")
-        ordering = ["seat_class", "seat"]
+        unique_together = ("flight", "cabin", "seat")
+        ordering = ["cabin", "seat"]
 
     @staticmethod
-    def validate_ticket(seat_class, seat, airplane, error_to_raise):
-        max_seat = getattr(airplane, "seats_" + seat_class.name.lower(), None)
-        if not max_seat:
-            raise error_to_raise(f"Airplane has no {seat_class.name} cabin")
-        if not 1 <= seat <= max_seat:
+    def validate_ticket(cabin, seat, airplane, error_to_raise):
+        cabins = getattr(airplane, "cabins", None)
+        if cabin not in cabins.all():
+            raise error_to_raise(f"Airplane has no cabin '{cabin.name}'")
+        if not 1 <= seat <= cabin.seats:
             raise error_to_raise(
-                f"Seat number must be in range (1, {max_seat})"
+                f"Seat number must be in range (1, {cabin.seats})"
             )
 
     def clean(self):
         Ticket.validate_ticket(
-            self.seat_class,
+            self.cabin,
             self.seat,
             self.flight.airplane,
             ValidationError,
@@ -178,5 +182,5 @@ class Ticket(models.Model):
     def __str__(self):
         return (
             f"{str(self.flight)} "
-            f"(seat: {self.seat}, seat_class: {str(self.seat_class)}"
+            f"(seat: {self.seat}, seat_class: {self.cabin.seat_class}"
         )

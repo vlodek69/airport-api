@@ -11,6 +11,7 @@ from airport.models import (
     Order,
     Ticket,
     AirplaneType,
+    Cabin,
 )
 
 admin.site.register(AirplaneType)
@@ -23,3 +24,4 @@ admin.site.register(Airport)
 admin.site.register(Country)
 admin.site.register(Airplane)
 admin.site.register(SeatClass)
+admin.site.register(Cabin)
