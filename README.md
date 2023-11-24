@@ -15,7 +15,7 @@ source venv/bin/activate (on macOS)
 ```
 Copy .env-sample -> .env and populate with all required data.
 ```
-docker-compose up --build
+docker-compose up --build -d
 ```
 
 ## How to use
