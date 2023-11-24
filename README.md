@@ -34,8 +34,6 @@ python manage.py createsuperuser
 
 See the documentation on `/api/doc/swagger/` endpoint.
 
-## Diagram
-
 ## Features
 
 1. Users can create orders with tickets for desired airplane flight.
@@ -46,3 +44,7 @@ See the documentation on `/api/doc/swagger/` endpoint.
 3. Flight endpoint, besides info about the route, airplane, and time of departure/arrival, includes an image of destination country.
 4. Authentication implemented using JWT.
 5. Documentation implemented using Swagger UI.
+
+## Diagram
+
+![airport_diagram](airport.png)
