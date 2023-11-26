@@ -192,8 +192,8 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class TicketListSerializer(TicketSerializer):
-    cabin = serializers.SlugRelatedField(
-        many=False, read_only=True, slug_field="seat_class.name"
+    cabin = serializers.CharField(
+        source="cabin.seat_class.name", read_only=True
     )
     flight = FlightListSerializer(many=False, read_only=True)
 
