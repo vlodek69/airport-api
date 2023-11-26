@@ -85,11 +85,9 @@ class AirplaneViewSet(
     mixins.ListModelMixin,
     GenericViewSet,
 ):
-    queryset = (
-        Airplane.objects
-        .select_related("airplane_type")
-        .prefetch_related("cabins")
-    )
+    queryset = Airplane.objects.select_related(
+        "airplane_type"
+    ).prefetch_related("cabins")
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -190,8 +188,8 @@ class FlightViewSet(viewsets.ModelViewSet):
         )
         .annotate(
             tickets_available=(
-                    Sum("airplane__cabins__seats", distinct=True)
-                    - Count("tickets")
+                Sum("airplane__cabins__seats", distinct=True)
+                - Count("tickets")
             )
         )
     )
