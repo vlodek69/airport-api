@@ -14,14 +14,20 @@ from airport.models import (
     Cabin,
 )
 
-admin.site.register(AirplaneType)
-admin.site.register(Ticket)
-admin.site.register(Order)
-admin.site.register(Flight)
-admin.site.register(Crew)
-admin.site.register(Route)
-admin.site.register(Airport)
-admin.site.register(Country)
-admin.site.register(Airplane)
-admin.site.register(SeatClass)
-admin.site.register(Cabin)
+
+model_list = [
+    SeatClass,
+    Airplane,
+    Country,
+    Airport,
+    Route,
+    Crew,
+    Flight,
+    Order,
+    Ticket,
+    AirplaneType,
+    Cabin,
+]
+
+for model in model_list:
+    admin.site.register(model)
