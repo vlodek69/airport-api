@@ -14,17 +14,23 @@ from airport.views import (
     CabinViewSet,
 )
 
+viewset_dict = {
+    "airplane-types": AirplaneTypeViewSet,
+    "seat-classes": SeatClassViewSet,
+    "cabins": CabinViewSet,
+    "airplanes": AirplaneViewSet,
+    "countries": CountryViewSet,
+    "airports": AirportViewSet,
+    "routes": RouteViewSet,
+    "crew": CrewViewSet,
+    "flights": FlightViewSet,
+    "orders": OrderViewSet,
+}
+
 router = routers.DefaultRouter()
-router.register("airplane-types", AirplaneTypeViewSet)
-router.register("seat-classes", SeatClassViewSet)
-router.register("cabins", CabinViewSet)
-router.register("airplanes", AirplaneViewSet)
-router.register("countries", CountryViewSet)
-router.register("airports", AirportViewSet)
-router.register("routes", RouteViewSet)
-router.register("crew", CrewViewSet)
-router.register("flights", FlightViewSet)
-router.register("orders", OrderViewSet)
+
+for viewset_prefix, viewset_class in viewset_dict.items():
+    router.register(viewset_prefix, viewset_class)
 
 urlpatterns = [path("", include(router.urls))]
 
