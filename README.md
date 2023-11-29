@@ -42,8 +42,9 @@ See the documentation on `/api/doc/swagger/` endpoint.
     - Airplanes with customisable cabins of different seat capacities and comfort classes;
     - Flights.
 3. Flight endpoint, besides info about the route, airplane, and time of departure/arrival, includes an image of destination country.
-4. Authentication implemented using JWT.
-5. Documentation implemented using Swagger UI.
+4. Filtering of Flights by departure/arrival points and by date of departure.
+5. Authentication implemented using JWT.
+6. Documentation implemented using Swagger UI.
 
 ## Diagram
 
